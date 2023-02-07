@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 # Setting up database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flask_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flask.db'
 db = SQLAlchemy(app)
 
 @app.route('/')

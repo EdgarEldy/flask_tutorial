@@ -18,8 +18,10 @@ def clean_categories_table(app):
         db.session.commit()
 
 
-def test_full_crud_lifecycle(client):
-    create_response = client.post("/api/v1/categories", json={"category_name": "Books"})
+def test_full_crud_lifecycle(client, admin_headers):
+    create_response = client.post(
+        "/api/v1/categories", json={"category_name": "Books"}, headers=admin_headers
+    )
     assert create_response.status_code == 201
     created = create_response.get_json()
     assert created["success"] is True
@@ -36,11 +38,13 @@ def test_full_crud_lifecycle(client):
     assert detail_response.status_code == 200
     assert detail_response.get_json()["data"]["category_name"] == "Books"
 
-    update_response = client.put(f"/api/v1/categories/{category_id}", json={"category_name": "Books & Comics"})
+    update_response = client.put(
+        f"/api/v1/categories/{category_id}", json={"category_name": "Books & Comics"}, headers=admin_headers
+    )
     assert update_response.status_code == 200
     assert update_response.get_json()["data"]["category_name"] == "Books & Comics"
 
-    delete_response = client.delete(f"/api/v1/categories/{category_id}")
+    delete_response = client.delete(f"/api/v1/categories/{category_id}", headers=admin_headers)
     assert delete_response.status_code == 200
     assert delete_response.get_json()["success"] is True
 
@@ -57,8 +61,8 @@ def test_get_detail_returns_404_api_response_for_unknown_id(client):
     assert body["data"] is None
 
 
-def test_create_with_missing_field_returns_400_with_field_errors(client):
-    response = client.post("/api/v1/categories", json={})
+def test_create_with_missing_field_returns_400_with_field_errors(client, admin_headers):
+    response = client.post("/api/v1/categories", json={}, headers=admin_headers)
 
     assert response.status_code == 400
     body = response.get_json()
@@ -66,9 +70,15 @@ def test_create_with_missing_field_returns_400_with_field_errors(client):
     assert "category_name" in body["errors"]["json"]
 
 
-def test_list_is_paginated(client):
+def test_create_without_authentication_returns_401(client):
+    response = client.post("/api/v1/categories", json={"category_name": "Books"})
+
+    assert response.status_code == 401
+
+
+def test_list_is_paginated(client, admin_headers):
     for i in range(3):
-        client.post("/api/v1/categories", json={"category_name": f"Category {i}"})
+        client.post("/api/v1/categories", json={"category_name": f"Category {i}"}, headers=admin_headers)
 
     response = client.get("/api/v1/categories?page=1&page_size=2")
 

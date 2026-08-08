@@ -1,6 +1,7 @@
 from flask import jsonify
 from flask.views import MethodView
 
+from flask_tutorial.auth_decorators import require_permission
 from flask_tutorial.schemas.category import (
     CategoryPageOut,
     CategoryQuerySchema,
@@ -22,6 +23,8 @@ class CategoryListView(MethodView):
         page_response = self.service.get_all(query_data["page"], query_data["page_size"])
         return ApiResponse.ok(page_response, "Categories retrieved")
 
+    @categories_bp.doc(security="BearerAuth")
+    @require_permission("categories", "create")
     @categories_bp.input(CategorySchema)
     @categories_bp.output(CategorySchema, status_code=201)
     def post(self, json_data):
@@ -38,12 +41,16 @@ class CategoryDetailView(MethodView):
         category = self.service.get_by_id(category_id)
         return ApiResponse.ok(category, "Category retrieved")
 
+    @categories_bp.doc(security="BearerAuth")
+    @require_permission("categories", "update")
     @categories_bp.input(CategorySchema)
     @categories_bp.output(CategorySchema)
     def put(self, category_id, json_data):
         category = self.service.update(category_id, json_data["category_name"])
         return ApiResponse.ok(category, "Category updated")
 
+    @categories_bp.doc(security="BearerAuth")
+    @require_permission("categories", "delete")
     def delete(self, category_id):
         self.service.delete(category_id)
         return jsonify(ApiResponse.ok(None, "Category deleted").to_dict()), 200

@@ -452,29 +452,24 @@ There is deliberately no refresh-token flow in this schema: access tokens are sh
 | categories, products | Public | Requires the matching `resource:action` permission (granted to `Admin` by default) |
 | customers, orders | Authenticated | Requires the matching `resource:action` permission (granted to `Admin` by default) |
 
+Permissions (and `enabled`/`account_locked` state) are checked once, at login, and embedded in the JWT's `permissions` claim — not re-queried per request. Revoking a role/permission or locking an account only takes effect once the token expires (`JWT_ACCESS_TOKEN_EXPIRES`) or is blacklisted via `logout`. Deliberate tradeoff for short-lived tokens with no refresh-token flow.
+
 ### Tasks
 
-- [ ] Models: `User`, `Role`, `Permission`, `role_user`/`role_permission` association tables, `ActivationToken`, `PasswordResetToken`, `BlacklistedToken`
-- [ ] Seed script/CLI command: default `Admin` role (all permissions) and `User` role (read-only permissions on `categories`/`products`)
-- [ ] `extensions.py`: `jwt = JWTManager()`, initialized in `create_app()`; `jwt.token_in_blocklist_loader` checks `BlacklistedToken` by `jti`
-- [ ] `email_service.py` (Flask-Mail wrapper): `send(to, subject, html_body)`, reading `MAIL_*` settings from `config.py`
-- [ ] `auth_service.py`:
-  - `register`: creates the `User` (`enabled=False`), generates an `ActivationToken`, builds a confirmation link (`FRONTEND_URL` + token), sends it via `email_service`
-  - `confirm_email`: looks up the `ActivationToken`, checks `expires_at`, sets `User.enabled = True` and `ActivationToken.validated_at`
-  - `resend_confirmation`: re-issues a fresh activation token if the account exists and is not yet enabled (same generic response either way, to avoid leaking account existence)
-  - `login`: rejects with a clear error if `enabled` is `False` or `account_locked` is `True`, before checking the password
-  - `logout`: inserts the current token's `jti` into `BlacklistedToken`
-  - `forgot_password`: generates a `PasswordResetToken`, builds a reset link, sends it via `email_service` (always returns a generic success message, whether or not the email exists)
-  - `reset_password`: validates the `PasswordResetToken` (not expired, not reused), updates the password hash
-- [ ] `RegisterSchema`, `LoginSchema`, `ConfirmEmailSchema` (`email`, `token`), `ResendConfirmationSchema` (`email`), `ForgotPasswordSchema` (`email`), `ResetPasswordSchema` (`email`, `token`, `new_password`) — Marshmallow schemas
-- [ ] `blueprints/auth/views.py` (function-based routes: `register`, `confirm-email`, `resend-confirmation`, `login`, `me`, `logout`, `forgot-password`, `reset-password`)
-- [ ] A permission-checking decorator (e.g. `@require_permission("categories", "create")`) applied to the mutating routes/views across all resources
-- [ ] Swagger UI: JWT Bearer security scheme wired to the "Authorize" button
-- [ ] Dev setup: point `MAIL_*` at a local catcher (e.g. [Mailpit](https://github.com/axllent/mailpit) via `docker-compose`, or [Mailtrap](https://mailtrap.io)) so confirmation/reset emails can be inspected without a real mailbox
-- [ ] A fake `email_service` (captures sent messages instead of hitting SMTP), used by both the integration and E2E tests below via a pytest fixture
-- [ ] Unit tests (pytest-mock): `auth_service`: `register` calls `email_service` with a confirmation link (mocking `email_service`); `login` raises when `enabled` is `False` or `account_locked` is `True`, before checking the password (mocking the user lookup); `forgot_password` always returns the same generic message whether or not the account exists
-- [ ] Integration tests (testcontainers-python, PostgreSQL): `auth_service` against a real database: `register` persists the user disabled; role/permission assignment persists across `role_user`/`role_permission`; `reset_password` rejects an expired or already-used token; a test JWT issued directly against a known signing key is accepted by protected routes and rejected once its `jti` is inserted into `blacklisted_tokens`
-- [ ] E2E tests (Flask `test_client()` + the fake `email_service`): register → confirmation email captured → `confirm-email` with the captured token succeeds → `login` succeeds; `login` fails while the account is unconfirmed; `forgot-password` → `reset-password` with the captured token → `login` with the new password succeeds; `reset-password` with a stale/reused token fails; `logout` then reusing the same access token returns 401; role-based access: a `User`-role account gets 403 on `POST /categories`, an `Admin`-role account succeeds, an unauthenticated request gets 401 on `GET /customers`
+- [x] Models: `User`, `Role`, `Permission`, `role_user`/`role_permission` association tables, `ActivationToken`, `PasswordResetToken`, `BlacklistedToken` — all `DateTime` columns use `timezone=True` so PostgreSQL returns timezone-aware values comparable against `datetime.now(timezone.utc)`
+- [x] Seed script/CLI command: `flask seed-roles` — default `Admin` role (all permissions, including `categories:read`/`products:read`) and `User` role (`categories:read`/`products:read` only) — safe to run more than once
+- [x] `jwt_handlers.py`: `jwt.token_in_blocklist_loader` checks `BlacklistedToken` by `jti`, plus `unauthorized_loader`/`invalid_token_loader`/`expired_token_loader`/`revoked_token_loader` so JWT errors return the `ApiResponse` envelope instead of Flask-JWT-Extended's default shape
+- [x] `email_service.py` (Flask-Mail wrapper): `send(to, subject, html_body)`, reading `MAIL_*` settings from `config.py`
+- [x] `auth_service.py`: `register`, `confirm_email`, `resend_confirmation`, `login` (rejects on `enabled=False`/`account_locked=True` before checking the password), `logout`, `forgot_password`, `reset_password` (consumes/deletes the token on success, since `password_reset_tokens` has no "used" column — the row's absence is what makes a reused token look invalid)
+- [x] `RegisterSchema`, `LoginSchema`, `ConfirmEmailSchema` (`email`, `token`), `ResendConfirmationSchema` (`email`), `ForgotPasswordSchema` (`email`), `ResetPasswordSchema` (`email`, `token`, `new_password`) — Marshmallow schemas
+- [x] `blueprints/auth/views.py` (function-based routes: `register`, `confirm-email`, `resend-confirmation`, `login`, `me`, `logout`, `forgot-password`, `reset-password`)
+- [x] `auth_decorators.py`: `require_permission(resource, action)`, applied to the mutating routes/views across `categories`/`products`/`customers`/`orders`; `customers`/`orders` GETs use plain `@jwt_required()` (authenticated, no specific permission)
+- [x] Swagger UI: JWT Bearer security scheme wired to the "Authorize" button, and every protected endpoint documents `security="BearerAuth"`
+- [x] Dev setup: `MAIL_SERVER`/`MAIL_PORT` already point at the `mailhog` service in `docker-compose.yml` (from `feature/core-architecture`)
+- [x] A fake `email_service` (captures sent messages instead of hitting SMTP), used by both the integration and E2E tests below via a pytest fixture
+- [x] Unit tests (pytest-mock): `auth_service`: `register` calls `email_service` with a confirmation link (mocking `email_service`); `login` raises when `enabled` is `False` or `account_locked` is `True`, before checking the password (mocking the user lookup); `forgot_password` always returns the same generic message whether or not the account exists
+- [x] Integration tests (testcontainers-python, PostgreSQL): `auth_service` against a real database: `register` persists the user disabled; role/permission assignment persists across `role_user`/`role_permission`; `reset_password` rejects an expired or already-used token; a test JWT issued directly against a known signing key is accepted by protected routes and rejected once its `jti` is inserted into `blacklisted_tokens`
+- [x] E2E tests (Flask `test_client()` + the fake `email_service`): register → confirmation email captured → `confirm-email` with the captured token succeeds → `login` succeeds; `login` fails while the account is unconfirmed; `forgot-password` → `reset-password` with the captured token → `login` with the new password succeeds; `reset-password` with a stale/reused token fails; `logout` then reusing the same access token returns 401; role-based access: a `User`-role account gets 403 on `POST /categories`, an `Admin`-role account succeeds, an unauthenticated request gets 401 on `GET /customers`. Also updated `feature/categories`/`products`/`customers`/`orders`' existing e2e tests to authenticate via a shared `admin_headers` fixture now that their mutating (and, for customers/orders, all) endpoints require it
 
 ## Order of work
 

@@ -404,13 +404,13 @@ Class-based views (`MethodView`).
 
 ### Tasks
 
-- [ ] `Order` SQLAlchemy model (foreign keys to `Customer` and `Product`)
-- [ ] `OrderSchema` (Marshmallow)
-- [ ] `OrderService`: queries `Order.query`/`db.session` directly (eager-loading related `Customer`/`Product` via `joinedload`), computes `total = quantity * product.unit_price`, checks that the customer and product exist
-- [ ] `OrderView` (`MethodView`)
-- [ ] Unit tests (pytest-mock): `total` computation as a pure function/method (`quantity * product.unit_price`), independent of persistence
-- [ ] Integration tests (testcontainers-python, PostgreSQL): `OrderService` against a real database: `total` is computed and persisted correctly; recomputes `total` on update when `quantity` changes; raises `ResourceNotFoundError` when the customer or product does not exist; eager-loaded query returns the related `Customer`/`Product` data; `customer_id`/`product_id` filters
-- [ ] E2E tests (Flask `test_client()`): full CRUD lifecycle on `/api/v1/orders`; `POST` stores the correct computed `total`; `customer_id`/`product_id` filters on the list endpoint; 404 `ApiResponse` when creating an order for an unknown customer or product
+- [x] `Order` SQLAlchemy model (foreign keys to `Customer` and `Product`)
+- [x] `OrderSchema` (Marshmallow)
+- [x] `OrderService`: queries `Order.query`/`db.session` directly (eager-loading related `Customer`/`Product` via `joinedload`), computes `total = quantity * product.unit_price` via a pure `_compute_total` static method, checks that the customer and product exist
+- [x] `OrderView` (`MethodView`) — `OrderListView`/`OrderDetailView`, same split as categories/products
+- [x] Unit tests (pytest-mock): `total` computation as a pure function/method (`quantity * product.unit_price`), independent of persistence
+- [x] Integration tests (testcontainers-python, PostgreSQL): `OrderService` against a real database: `total` is computed and persisted correctly; recomputes `total` on update when `quantity` changes; raises `ResourceNotFoundError` when the customer or product does not exist; eager-loaded query returns the related `Customer`/`Product` data; `customer_id`/`product_id` filters
+- [x] E2E tests (Flask `test_client()`): full CRUD lifecycle on `/api/v1/orders`; `POST` stores the correct computed `total`; `customer_id`/`product_id` filters on the list endpoint; 404 `ApiResponse` when creating an order for an unknown customer or product
 
 ## feature/auth
 

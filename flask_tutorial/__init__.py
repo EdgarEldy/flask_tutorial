@@ -3,6 +3,7 @@ from apiflask import APIFlask
 from flask_tutorial.config import config_by_name
 from flask_tutorial.error_handlers import register_error_handlers
 from flask_tutorial.extensions import db, jwt, mail, migrate
+from flask_tutorial.schemas.common import ApiResponseSchema
 
 
 def create_app(config_name: str = "development") -> APIFlask:
@@ -14,6 +15,12 @@ def create_app(config_name: str = "development") -> APIFlask:
     app.security_schemes = {
         "BearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"},
     }
+
+    # Every @app.output(SomeSchema)-decorated view gets wrapped in the
+    # ApiResponse envelope automatically, with SomeSchema documented under
+    # "data" in the OpenAPI spec (see ApiResponseSchema's docstring).
+    app.config["BASE_RESPONSE_SCHEMA"] = ApiResponseSchema
+    app.config["BASE_RESPONSE_DATA_KEY"] = "data"
 
     db.init_app(app)
     migrate.init_app(app, db)

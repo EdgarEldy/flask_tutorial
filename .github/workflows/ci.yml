@@ -27,6 +27,13 @@ jobs:
 
     env:
       FLASK_APP: app.py
+      # pytest's app fixtures call create_app("testing") regardless of this
+      # value, but `flask db upgrade` resolves its config through
+      # FLASK_ENV - without it here it would default to "development" and
+      # migrate DATABASE_URL (flask_tutorial) while pytest reads/writes
+      # TEST_DATABASE_URL (flask_tutorial_test), leaving the database
+      # pytest actually uses unmigrated.
+      FLASK_ENV: testing
       DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/flask_tutorial
       TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/flask_tutorial_test
       SECRET_KEY: ci-secret
@@ -46,6 +53,7 @@ jobs:
 
       - name: Create the test database
         run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d flask_tutorial -tc "SELECT 1 FROM pg_database WHERE datname = 'flask_tutorial_test'" | grep -q 1 || \
           PGPASSWORD=postgres psql -h localhost -U postgres -d flask_tutorial -c "CREATE DATABASE flask_tutorial_test"
 
       - name: Apply migrations

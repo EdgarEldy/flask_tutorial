@@ -379,14 +379,14 @@ Function-based views.
 
 ### Tasks
 
-- [ ] `Customer` SQLAlchemy model
-- [ ] `CustomerSchema` (Marshmallow, email uniqueness enforced in the service)
-- [ ] `CustomerService` (queries `Customer.query`/`db.session` directly)
-- [ ] `blueprints/customers/views.py`: one `@customers_bp.route(...)` function per endpoint, grouped under `/api/v1/customers`, each decorated with `@app.input`/`@app.output` against `CustomerSchema`
-- [ ] Registered in `create_app()` via `app.register_blueprint(customers_bp)`
-- [ ] Unit tests (pytest-mock): `CustomerService`: `create`/`update` raise a `BusinessRuleError` on a duplicate email (mocking the email-lookup call site), except when the email belongs to the same customer being updated
-- [ ] Integration tests (testcontainers-python, PostgreSQL): `CustomerService` against a real database: name/email search query, unique email constraint enforced by the database
-- [ ] E2E tests (Flask `test_client()`): full CRUD lifecycle on `/api/v1/customers`; `search` query parameter; 400 `ApiResponse` with field-level errors on a validation failure; 422 on duplicate email
+- [x] `Customer` SQLAlchemy model
+- [x] `CustomerSchema` (Marshmallow, email uniqueness enforced in the service)
+- [x] `CustomerService` (queries `Customer.query`/`db.session` directly)
+- [x] `blueprints/customers/views.py`: one `@customers_bp.route(...)` function per endpoint, grouped under `/api/v1/customers`, each decorated with `@app.input`/`@app.output` against `CustomerSchema`
+- [x] Registered in `create_app()` via `app.register_blueprint(customers_bp)`
+- [x] Unit tests (pytest-mock): `CustomerService`: `create`/`update` raise a `BusinessRuleError` on a duplicate email (mocking the email-lookup call site), except when the email belongs to the same customer being updated
+- [x] Integration tests (testcontainers-python, PostgreSQL): `CustomerService` against a real database: name/email search query, unique email constraint enforced by the database
+- [x] E2E tests (Flask `test_client()`): full CRUD lifecycle on `/api/v1/customers`; `search` query parameter; 400 `ApiResponse` with field-level errors on a validation failure; 422 on duplicate email
 
 ## feature/orders
 

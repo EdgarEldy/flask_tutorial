@@ -354,14 +354,14 @@ Class-based views (`MethodView`). Depends on `feature/categories` (a product bel
 
 ### Tasks
 
-- [ ] `Product` SQLAlchemy model (many-to-one relationship to `Category`)
-- [ ] `ProductSchema` (Marshmallow)
-- [ ] `ProductService` (queries `Product.query`/`db.session` directly)
-- [ ] Business rule: deleting a category that still has products is forbidden (`BusinessRuleError`) — extends `CategoryService.delete` now that `Product` exists
-- [ ] `ProductView` (`MethodView`)
-- [ ] Unit tests (pytest-mock): `CategoryService.delete` on a category with products raises `BusinessRuleError` (mocking the products-exist check)
-- [ ] Integration tests (testcontainers-python, PostgreSQL): `ProductService` against a real database: pagination and `category_id` filter, category→product relationship loads correctly, unique/FK constraints enforced by the database, deleting a category that still has products raises `BusinessRuleError` against real rows
-- [ ] E2E tests (Flask `test_client()`): full CRUD lifecycle on `/api/v1/products`; `category_id` filter on the products list; 404 `ApiResponse` for an unknown id; 422 `ApiResponse` when deleting a category that still has products
+- [x] `Product` SQLAlchemy model (many-to-one relationship to `Category`)
+- [x] `ProductSchema` (Marshmallow)
+- [x] `ProductService` (queries `Product.query`/`db.session` directly; also checks the referenced category exists on create/update, raising `ResourceNotFoundError` — same pattern as `feature/orders`' customer/product existence check)
+- [x] Business rule: deleting a category that still has products is forbidden (`BusinessRuleError`) — extends `CategoryService.delete` now that `Product` exists
+- [x] `ProductView` (`MethodView`) — same two-class split as `CategoryView` (`ProductListView`, `ProductDetailView`)
+- [x] Unit tests (pytest-mock): `CategoryService.delete` on a category with products raises `BusinessRuleError` (mocking the products-exist check)
+- [x] Integration tests (testcontainers-python, PostgreSQL): `ProductService` against a real database: pagination and `category_id` filter, category→product relationship loads correctly, unique/FK constraints enforced by the database, deleting a category that still has products raises `BusinessRuleError` against real rows
+- [x] E2E tests (Flask `test_client()`): full CRUD lifecycle on `/api/v1/products`; `category_id` filter on the products list; 404 `ApiResponse` for an unknown id; 422 `ApiResponse` when deleting a category that still has products
 
 ## feature/customers
 

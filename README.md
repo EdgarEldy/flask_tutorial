@@ -293,25 +293,25 @@ Technical foundation: project scaffolding, SQLAlchemy/PostgreSQL setup, Docker, 
 
 ### Tasks
 
-- [ ] `create_app()` application factory in `flask_tutorial/__init__.py`, entry point in `app.py`
-- [ ] `requirements.txt`: `Flask`, `Flask-SQLAlchemy`, `Flask-Migrate`, `psycopg[binary]`, `marshmallow`, `marshmallow-sqlalchemy`, `apiflask`, `flask-jwt-extended`, `flask-mail`, `python-dotenv`
-- [ ] `requirements-dev.txt`: `pytest`, `pytest-mock`, `pytest-flask`, `testcontainers[postgres]`, `ruff`
-- [ ] Package layout above (`blueprints`, `models`, `schemas`, `services`, `repositories`, `errors.py`, `error_handlers.py`)
-- [ ] `config.py`: `Config`/`DevConfig`/`TestConfig`/`ProdConfig` classes reading from environment variables — PostgreSQL URI, JWT secret/expiry, SMTP settings (`MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_DEFAULT_SENDER`), and the frontend base URL used to build activation/reset links (`FRONTEND_URL`)
-- [ ] `extensions.py`: `db` (`SQLAlchemy`), `migrate` (`Migrate`), `jwt` (`JWTManager`), `mail` (`Mail`), `api` (`APIFlask`) instances, initialized in `create_app()`
-- [ ] Initial migration (`flask db init`, `flask db migrate -m "initial"`, `flask db upgrade`)
-- [ ] `errors.py` (`ResourceNotFoundError`, `BusinessRuleError`), `error_handlers.py`, `ApiResponse`/`PageResponse` in `schemas/common.py`
-- [ ] `error_handlers.py`: a catch-all 404 handler returning `ApiResponse.fail("Resource not found")` for any unmatched route, so an unknown URL stays consistent with the rest of the API's response envelope instead of falling back to Flask's plain 404 page
-- [ ] APIFlask Swagger UI configuration, including the "Authorize" button (Bearer JWT) for later use in `feature/auth`
-- [ ] `health` blueprint: `GET /health` pings the database and returns `ApiResponse.ok({"status": "up"}, ...)`
-- [ ] `docker-compose.yml` (API + PostgreSQL), `Dockerfile` (multi-stage)
-- [ ] `.github/workflows/ci.yml`: `pip install -r requirements.txt -r requirements-dev.txt` + `pytest`
-- [ ] `.github/workflows/pr-checks.yml`: validates every commit message on the PR range against the Conventional Commits pattern
-- [ ] `.github/PULL_REQUEST_TEMPLATE.md`: branch, task checklist, commit summary, test checklist, code review checklist
-- [ ] Test project scaffolding: `tests/unit/`, `tests/integration/`, `tests/e2e/`, a `conftest.py` providing the Testcontainers PostgreSQL fixture and the Flask `test_client()` fixture
-- [ ] Unit tests: `error_handlers` map `ResourceNotFoundError` to 404, a Marshmallow `ValidationError` to 400 with a field-level error list, `BusinessRuleError` to 422, and any other exception to 500, always inside an `ApiResponse` with `success = False`
-- [ ] E2E test: `GET /health` returns 200
-- [ ] E2E test: an unmatched route returns 404 with the `ApiResponse` shape (`success = False`)
+- [x] `create_app()` application factory in `flask_tutorial/__init__.py`, entry point in `app.py`
+- [x] `requirements.txt`: `Flask`, `Flask-SQLAlchemy`, `Flask-Migrate`, `psycopg[binary]`, `marshmallow`, `marshmallow-sqlalchemy`, `apiflask`, `flask-jwt-extended`, `flask-mail`, `python-dotenv`
+- [x] `requirements-dev.txt`: `pytest`, `pytest-mock`, `pytest-flask`, `testcontainers[postgres]`, `ruff`
+- [x] Package layout above (`blueprints`, `models`, `schemas`, `services`, `repositories`, `errors.py`, `error_handlers.py`) — `models`/`services`/`repositories` are empty packages until `feature/categories` starts populating them
+- [x] `config.py`: `Config`/`DevConfig`/`TestConfig`/`ProdConfig` classes reading from environment variables — PostgreSQL URI, JWT secret/expiry, SMTP settings (`MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_DEFAULT_SENDER`), and the frontend base URL used to build activation/reset links (`FRONTEND_URL`)
+- [x] `extensions.py`: `db` (`SQLAlchemy`), `migrate` (`Migrate`), `jwt` (`JWTManager`), `mail` (`Mail`) instances, initialized in `create_app()`; the APIFlask app itself (playing the role of `api`) is constructed directly in `create_app()`
+- [ ] Initial migration (`flask db init`, `flask db migrate -m "initial"`, `flask db upgrade`) — `flask db init` is done (`migrations/` scaffold committed); `migrate`/`upgrade` need a reachable PostgreSQL instance and are still pending
+- [x] `errors.py` (`ResourceNotFoundError`, `BusinessRuleError`), `error_handlers.py`, `ApiResponse`/`PageResponse` in `schemas/common.py`
+- [x] `error_handlers.py`: a catch-all 404 handler returning `ApiResponse.fail("Resource not found")` for any unmatched route, so an unknown URL stays consistent with the rest of the API's response envelope instead of falling back to Flask's plain 404 page
+- [x] APIFlask Swagger UI configuration, including the "Authorize" button (Bearer JWT) for later use in `feature/auth`
+- [x] `health` blueprint: `GET /health` pings the database and returns `ApiResponse.ok({"status": "up"}, ...)`
+- [x] `docker-compose.yml` (API only — reuses an already-running local PostgreSQL container instead of provisioning a new one, see `.claude/CLAUDE.md`'s "Branch workflow"), `Dockerfile` (multi-stage)
+- [x] `.github/workflows/ci.yml`: `pip install -r requirements.txt -r requirements-dev.txt` + `pytest`
+- [x] `.github/workflows/pr-checks.yml`: validates every commit message on the PR range against the Conventional Commits pattern
+- [x] `.github/PULL_REQUEST_TEMPLATE.md`: branch, task checklist, commit summary, test checklist, code review checklist
+- [x] Test project scaffolding: `tests/unit/`, `tests/integration/`, `tests/e2e/`, a `conftest.py` providing the Flask `test_client()` fixture (a Testcontainers PostgreSQL fixture is added once `feature/products` introduces the first integration tests)
+- [x] Unit tests: `error_handlers` map `ResourceNotFoundError` to 404, a Marshmallow `ValidationError` to 400 with a field-level error list, `BusinessRuleError` to 422, and any other exception to 500, always inside an `ApiResponse` with `success = False`
+- [x] E2E test: `GET /health` returns 200
+- [x] E2E test: an unmatched route returns 404 with the `ApiResponse` shape (`success = False`)
 
 ## feature/categories
 

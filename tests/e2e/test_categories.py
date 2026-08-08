@@ -1,3 +1,23 @@
+import pytest
+
+from flask_tutorial.extensions import db
+from flask_tutorial.models.category import Category
+
+
+@pytest.fixture(autouse=True)
+def clean_categories_table(app):
+    # Scoped to this module only (not tests/e2e/conftest.py) so sibling e2e
+    # tests that don't touch the categories table (health, validation-error
+    # envelope probes) don't pick up an unrelated database dependency.
+    with app.app_context():
+        db.session.query(Category).delete()
+        db.session.commit()
+    yield
+    with app.app_context():
+        db.session.query(Category).delete()
+        db.session.commit()
+
+
 def test_full_crud_lifecycle(client):
     create_response = client.post("/api/v1/categories", json={"category_name": "Books"})
     assert create_response.status_code == 201

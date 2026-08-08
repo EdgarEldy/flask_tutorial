@@ -330,13 +330,13 @@ Class-based views (`MethodView`).
 
 ### Tasks
 
-- [ ] `Category` SQLAlchemy model
-- [ ] `CategorySchema` (Marshmallow), reused for input validation, output serialization, and OpenAPI generation
-- [ ] `CategoryService` (business logic, queries `Category.query`/`db.session` directly — no repository layer)
-- [ ] `CategoryView` (`MethodView`), registered under `/api/v1/categories` via a Blueprint — implemented as two `MethodView` classes (`CategoryListView` for GET-list/POST, `CategoryDetailView` for GET/PUT/DELETE by id), since APIFlask's `@app.output` needs one fixed schema per view method and list/detail responses differ in shape
-- [ ] Unit tests (pytest-mock): `CategoryService`: `get_by_id` raises `ResourceNotFoundError` for an unknown id (mocking the `Category.query`/`db.session` call site) — the rest of `CategoryService`'s behavior (pagination, persistence) is thin enough that it's covered by the integration layer instead of being mocked
-- [ ] Integration tests (testcontainers-python, PostgreSQL): `CategoryService` against a real database: pagination, `category_name` NOT NULL constraint enforced by the database
-- [ ] E2E tests (Flask `test_client()`): full CRUD lifecycle on `/api/v1/categories`; 404 `ApiResponse` for an unknown id
+- [x] `Category` SQLAlchemy model
+- [x] `CategorySchema` (Marshmallow), reused for input validation, output serialization, and OpenAPI generation
+- [x] `CategoryService` (business logic, queries `Category.query`/`db.session` directly — no repository layer)
+- [x] `CategoryView` (`MethodView`), registered under `/api/v1/categories` via a Blueprint — implemented as two `MethodView` classes (`CategoryListView` for GET-list/POST, `CategoryDetailView` for GET/PUT/DELETE by id), since APIFlask's `@app.output` needs one fixed schema per view method and list/detail responses differ in shape
+- [x] Unit tests (pytest-mock): `CategoryService`: `get_by_id`/`update`/`delete` raise `ResourceNotFoundError` for an unknown id (mocking the `db.session.get` call site) — the rest of `CategoryService`'s behavior (pagination, persistence) is thin enough that it's covered by the integration layer instead of being mocked
+- [x] Integration tests (testcontainers-python, PostgreSQL): `CategoryService` against a real database: pagination, create/update/delete persistence, `category_name` NOT NULL constraint enforced by the database
+- [x] E2E tests (Flask `test_client()`): full CRUD lifecycle on `/api/v1/categories`; 404 `ApiResponse` for an unknown id; pagination; 400 on a missing required field
 
 ## feature/products
 

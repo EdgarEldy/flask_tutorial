@@ -1,0 +1,5 @@
+pytest
+pytest-mock
+pytest-flask
+testcontainers[postgres]
+ruff

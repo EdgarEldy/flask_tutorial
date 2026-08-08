@@ -141,3 +141,5 @@ cython_debug/
 # .idea
 .idea
 
+# flask_db
+flask_db

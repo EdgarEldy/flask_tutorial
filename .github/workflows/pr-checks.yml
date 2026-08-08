@@ -1,0 +1,31 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [develop, master]
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages against Conventional Commits
+        run: |
+          set -e
+          PATTERN='^(feat|fix|refactor|test|docs|chore|ci|style|perf)(\([a-z0-9_-]+\))?: .+'
+          FAILED=0
+          for sha in $(git log --format=%H origin/${{ github.base_ref }}..${{ github.event.pull_request.head.sha }}); do
+            subject=$(git log -1 --format=%s "$sha")
+            if [[ "$subject" =~ ^Merge ]]; then
+              continue
+            fi
+            if ! [[ "$subject" =~ $PATTERN ]]; then
+              echo "::error::Commit $sha does not follow Conventional Commits: \"$subject\""
+              FAILED=1
+            fi
+          done
+          exit $FAILED

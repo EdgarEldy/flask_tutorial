@@ -1,6 +1,7 @@
 from flask import jsonify
 from flask.views import MethodView
 
+from flask_tutorial.auth_decorators import require_permission
 from flask_tutorial.schemas.common import ApiResponse
 from flask_tutorial.schemas.product import (
     ProductPageOut,
@@ -24,6 +25,8 @@ class ProductListView(MethodView):
         )
         return ApiResponse.ok(page_response, "Products retrieved")
 
+    @products_bp.doc(security="BearerAuth")
+    @require_permission("products", "create")
     @products_bp.input(ProductSchema)
     @products_bp.output(ProductSchema, status_code=201)
     def post(self, json_data):
@@ -42,6 +45,8 @@ class ProductDetailView(MethodView):
         product = self.service.get_by_id(product_id)
         return ApiResponse.ok(product, "Product retrieved")
 
+    @products_bp.doc(security="BearerAuth")
+    @require_permission("products", "update")
     @products_bp.input(ProductSchema)
     @products_bp.output(ProductSchema)
     def put(self, product_id, json_data):
@@ -50,6 +55,8 @@ class ProductDetailView(MethodView):
         )
         return ApiResponse.ok(product, "Product updated")
 
+    @products_bp.doc(security="BearerAuth")
+    @require_permission("products", "delete")
     def delete(self, product_id):
         self.service.delete(product_id)
         return jsonify(ApiResponse.ok(None, "Product deleted").to_dict()), 200

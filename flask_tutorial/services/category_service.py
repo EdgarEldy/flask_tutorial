@@ -1,6 +1,7 @@
-from flask_tutorial.errors import ResourceNotFoundError
+from flask_tutorial.errors import BusinessRuleError, ResourceNotFoundError
 from flask_tutorial.extensions import db
 from flask_tutorial.models.category import Category
+from flask_tutorial.models.product import Product
 from flask_tutorial.schemas.common import PageResponse
 
 
@@ -31,5 +32,10 @@ class CategoryService:
 
     def delete(self, category_id: int) -> None:
         category = self.get_by_id(category_id)
+        if self._category_has_products(category_id):
+            raise BusinessRuleError(f"Cannot delete category {category_id}: it still has products")
         db.session.delete(category)
         db.session.commit()
+
+    def _category_has_products(self, category_id: int) -> bool:
+        return db.session.query(Product.query.filter_by(category_id=category_id).exists()).scalar()

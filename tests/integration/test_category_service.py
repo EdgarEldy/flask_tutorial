@@ -1,8 +1,10 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from flask_tutorial.errors import BusinessRuleError
 from flask_tutorial.extensions import db
 from flask_tutorial.models.category import Category
+from flask_tutorial.models.product import Product
 from flask_tutorial.services.category_service import CategoryService
 
 
@@ -56,3 +58,15 @@ def test_category_name_not_null_constraint_is_enforced_by_the_database(app):
         db.session.add(Category(category_name=None))
         with pytest.raises(IntegrityError):
             db.session.commit()
+
+
+def test_delete_raises_business_rule_error_when_category_still_has_products(app, service):
+    with app.app_context():
+        category = service.create("Electronics")
+        db.session.add(Product(category_id=category.id, product_name="Laptop", unit_price=999.99))
+        db.session.commit()
+
+        with pytest.raises(BusinessRuleError):
+            service.delete(category.id)
+
+        assert db.session.get(Category, category.id) is not None

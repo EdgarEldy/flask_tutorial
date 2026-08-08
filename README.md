@@ -262,7 +262,8 @@ All commits follow **Conventional Commits**, checked in CI on every Pull Request
 | `refactor` | Code change that is neither a bug fix nor a feature |
 | `test` | Adding or updating tests |
 | `docs` | Documentation only |
-| `chore` | Tooling, config, CI, deps |
+| `chore` | Tooling, config, deps |
+| `ci` | CI pipeline/workflow changes |
 | `style` | Formatting (`ruff format`), no logic change |
 | `perf` | Performance improvement |
 

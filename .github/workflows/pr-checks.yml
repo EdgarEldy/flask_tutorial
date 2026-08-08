@@ -16,7 +16,7 @@ jobs:
       - name: Validate commit messages against Conventional Commits
         run: |
           set -e
-          PATTERN='^(feat|fix|refactor|test|docs|chore|style|perf)(\([a-z0-9_-]+\))?: .+'
+          PATTERN='^(feat|fix|refactor|test|docs|chore|ci|style|perf)(\([a-z0-9_-]+\))?: .+'
           FAILED=0
           for sha in $(git log --format=%H origin/${{ github.base_ref }}..${{ github.event.pull_request.head.sha }}); do
             subject=$(git log -1 --format=%s "$sha")

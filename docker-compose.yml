@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development
+      # Reuses the Postgres container already running on the host (e.g. `postgres_main`)
+      # instead of provisioning a new database container. Adjust user/password/db name
+      # to match that existing container.
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@host.docker.internal:5432/flask_tutorial
+      SECRET_KEY: change-me
+      JWT_SECRET_KEY: change-me
+      MAIL_SERVER: mailhog
+      MAIL_PORT: 1025
+      FRONTEND_URL: http://localhost:3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/app
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"

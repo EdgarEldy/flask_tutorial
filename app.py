@@ -1,23 +1,17 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+"""
+This script runs the flask_tutorial application using a development server.
+"""
 
-app = Flask(__name__)
+import os
 
-# Setting up database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flask_db'
-db = SQLAlchemy(app)
+from flask_tutorial import create_app
 
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
+app = create_app(os.environ.get("FLASK_ENV", "development"))
 
-from os import environ
-from flask_tutorial import app
-
-if __name__ == '__main__':
-    HOST = environ.get('SERVER_HOST', 'localhost')
+if __name__ == "__main__":
+    HOST = os.environ.get("SERVER_HOST", "localhost")
     try:
-        PORT = int(environ.get('SERVER_PORT', '5000'))
+        PORT = int(os.environ.get("SERVER_PORT", "5000"))
     except ValueError:
         PORT = 5000
     app.run(HOST, PORT)

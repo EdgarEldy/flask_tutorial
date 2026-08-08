@@ -1,8 +1,10 @@
 from apiflask import APIFlask
 
+from flask_tutorial.cli import register_cli
 from flask_tutorial.config import config_by_name
 from flask_tutorial.error_handlers import register_error_handlers
 from flask_tutorial.extensions import db, jwt, mail, migrate
+from flask_tutorial.jwt_handlers import register_jwt_handlers
 from flask_tutorial.schemas.common import ApiResponseSchema
 
 
@@ -28,6 +30,8 @@ def create_app(config_name: str = "development") -> APIFlask:
     mail.init_app(app)
 
     register_error_handlers(app)
+    register_jwt_handlers(app)
+    register_cli(app)
 
     from flask_tutorial.blueprints.health.views import health_bp
 
@@ -48,5 +52,9 @@ def create_app(config_name: str = "development") -> APIFlask:
     from flask_tutorial.blueprints.orders.views import orders_bp
 
     app.register_blueprint(orders_bp)
+
+    from flask_tutorial.blueprints.auth.views import auth_bp
+
+    app.register_blueprint(auth_bp)
 
     return app

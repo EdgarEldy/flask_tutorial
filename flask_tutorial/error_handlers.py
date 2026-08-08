@@ -3,7 +3,11 @@ import logging
 from flask import jsonify
 from marshmallow import ValidationError
 
-from flask_tutorial.errors import BusinessRuleError, ResourceNotFoundError
+from flask_tutorial.errors import (
+    BusinessRuleError,
+    ForbiddenError,
+    ResourceNotFoundError,
+)
 from flask_tutorial.schemas.common import ApiResponse
 
 logger = logging.getLogger(__name__)
@@ -41,6 +45,10 @@ def register_error_handlers(app):
     @app.errorhandler(BusinessRuleError)
     def handle_business_rule(err: BusinessRuleError):
         return jsonify(ApiResponse.fail(err.message).to_dict()), 422
+
+    @app.errorhandler(ForbiddenError)
+    def handle_forbidden(err: ForbiddenError):
+        return jsonify(ApiResponse.fail(err.message).to_dict()), 403
 
     @app.errorhandler(404)
     def handle_not_found_route(_err):

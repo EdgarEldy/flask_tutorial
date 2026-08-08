@@ -37,4 +37,8 @@ def create_app(config_name: str = "development") -> APIFlask:
 
     app.register_blueprint(categories_bp)
 
+    from flask_tutorial.blueprints.products.views import products_bp
+
+    app.register_blueprint(products_bp)
+
     return app

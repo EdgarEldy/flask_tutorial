@@ -45,4 +45,8 @@ def create_app(config_name: str = "development") -> APIFlask:
 
     app.register_blueprint(customers_bp)
 
+    from flask_tutorial.blueprints.orders.views import orders_bp
+
+    app.register_blueprint(orders_bp)
+
     return app
